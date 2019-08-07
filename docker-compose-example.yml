@@ -1,0 +1,45 @@
+# Сервер Sphinx в контейнере, мускуль на хосте, redis в контейнере, переменные окружения в env-файле
+version: "3"
+services:
+
+  redis:
+    image: redis
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+
+  sphinx:
+    image: git.test.com:4567/test/backend/search-service/sphinx:latest
+    links:
+      - redis
+    expose:
+      - "9306"
+    ports:
+      - "9306:9306"
+    volumes:
+      - ./sphinx:/opt
+      - ./sphinxsearch:/usr/local/var/lib/sphinxsearch
+      - ./logs/sphinxsearch:/var/log/sphinxsearch
+    env_file:
+      - sphinx.env
+    depends_on:
+      - redis
+    command: /opt/bin/sphinx-entry.sh
+
+  app:
+    image: git.test.com:4567/test/backend/search-service:latest
+    links:
+      - redis
+      - sphinx
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app/search:/opt/app
+      - ./logs/search:/var/log/search
+    env_file:
+      - app.env
+    depends_on:
+      - sphinx
+      - redis
+    command: /opt/app/bin/search-dev.sh

@@ -1,0 +1,11 @@
+falcon
+ujson
+requests
+meinheld
+gunicorn
+
+redis
+hiredis
+pymysql
+
+raven

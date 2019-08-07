@@ -1,0 +1,41 @@
+version: "3"
+services:
+
+  test-redis:
+    image: redis
+    container_name: search-test-redis
+    expose:
+      - "6379"
+    ports:
+      - "6379:6379"
+
+  test-sphinx:
+    image: $SPHINX_CONTAINER_IMAGE
+    container_name: search-test-sphinx
+    expose:
+      - "9306"
+    ports:
+      - "9306:9306"
+    volumes:
+      - /usr/local/var/lib/sphinxsearch:/usr/local/var/lib/sphinxsearch/
+      - ./sphinx/sphinx.conf:/etc/sphinxsearch/sphinxy.conf
+
+
+  tests:
+    image: $APPLICATION_CONTAINER_TEST_IMAGE
+    container_name: search-test
+    environment:
+      - DEBUG=1
+      - REDIS_HOST=test_redis
+      - LOG_DB_QUERY=0
+      - LOG_DIR=/var/log
+      - SENTRY=
+    links:
+      - test-redis
+      - test-sphinx
+    depends_on:
+      - test-redis
+      - test-sphinx
+    env_file:
+      - app-example.env
+    command: ./bin/search-tests.sh

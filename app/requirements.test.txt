@@ -1,0 +1,6 @@
+-r requirements.txt
+
+mock
+mockredis
+pytest
+pytest-cov
